@@ -279,30 +279,6 @@ function addtransactions(expediteur, destinataire, amount) {
 }
 
 // **************************************transfer***************************************************//
-
-function transfer(expediteur, numcompte, amount) {
-  checkUser(numcompte, (destinataire) => {
-    console.log("Étape 1: Destinataire trouve -", destinataire.name);
-    checkSolde(expediteur, amount, (soldemessage) => {
-      console.log(soldemessage);
-      if (soldemessage === "Sufficient balance") {
-        updateSolde(expediteur, destinataire, amount, (updatemessage) => {
-          if (updatemessage === "update balance done") {
-            addtransactions(expediteur, destinataire, amount, (addtransactionMessage) => {
-              console.log(addtransactionMessage);
-            });
-          } else {
-            console.log(updatemessage);
-          }
-        })
-      }
-      else {
-        console.log(soldemessage);
-      }
-    })
-  })
-}
-
 function transfer(expediteur, numcompte, amount) {
   let destinataire;
 
