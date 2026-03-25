@@ -1245,3 +1245,106 @@ body.popup-open {
     padding: 16px;
   }
 }
+
+
+
+/* ===== POPUP RECHARGE ===== */
+/*
+.recharge-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  z-index: 1000;
+}
+
+.recharge-content {
+  background: white;
+  width: 400px;
+  max-width: 90%;
+  border-radius: 10px;
+  padding: 20px;
+}
+
+.recharge-hidden {
+  display: none;
+}
+
+.recharge-visible {
+  display: flex;
+}*/
+
+/* =====================
+   POPUP RECHARGE
+===================== */
+
+.recharge-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+  animation: fadeIn 0.3s ease;
+}
+
+.recharge-overlay.recharge-active {
+  display: flex;
+}
+
+.recharge-content {
+  background: white;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  animation: slideIn 0.3s ease;
+  padding: 20px;
+}
+
+.recharge-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid #eef2f6;
+}
+
+.recharge-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #1a2639;
+}
+
+.recharge-body {
+  padding: 36px;
+}
+
+.recharge-hidden {
+  display: none;
+}
+
+.recharge-visible {
+  display: flex;
+}
+
+.form-actions{
+  padding: 20px;
+}
+
+.form-group{
+  padding: 20px;
+}

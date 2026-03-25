@@ -11,12 +11,13 @@ const database = {
         currency: "MAD",
         cards: [
           { numcards: "124847", type: "visa", balance: 14712, expiry: "2027-08-14", vcc: "147" },
-          { numcards: "124478", type: "mastercard", balance: 1470, expiry: "2028-08-14", vcc: "257" }
+          { numcards: "124478", type: "mastercard", balance: 1470, expiry: "2025-08-14", vcc: "257" }
         ],
         transactions: [
-          { id: "1", type: "credit", amount: 140, date: "2025-08-14", from: "Ahmed", to: "124847" },
-          { id: "2", type: "debit", amount: 200, date: "2025-08-13", from: "124847", to: "Amazon" },
-          { id: "3", type: "credit", amount: 250, date: "2025-08-12", from: "Ahmed", to: "124478" }
+          { id: "1", type: "credit", etat: "success", amount: 140, date: "2025-08-14", from: "Ahmed", to: "124847" },
+          { id: "2", type: "debit", etat: "success", amount: 200, date: "2025-08-13", from: "124847", to: "Amazon" },
+          { id: "3", type: "credit", etat: "success", amount: 250, date: "2025-08-12", from: "Ahmed", to: "124478" },
+          { id: "4", type: "recharge", etat: "success", amount: 300, date: "2025-08-11", from: "124847", to: "Ali" }
         ],
         beneficiaries: [
           { id: "1", name: "Ahmed", account: "12347" },

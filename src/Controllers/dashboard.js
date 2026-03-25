@@ -1,5 +1,6 @@
 import { getbeneficiaries, finduserbyaccount, findbeneficiarieByid } from "../Model/database.js";
 const user = JSON.parse(sessionStorage.getItem("currentUser"));
+
 // DOM elements
 const greetingName = document.getElementById("greetingName");
 const currentDate = document.getElementById("currentDate");
@@ -8,6 +9,7 @@ const incomeElement = document.getElementById("monthlyIncome");
 const expensesElement = document.getElementById("monthlyExpenses");
 const activecards = document.getElementById("activeCards");
 const transactionsList = document.getElementById("recentTransactionsList");
+
 const transferBtn = document.getElementById("quickTransfer");
 const transferSection = document.getElementById("transferPopup");
 const closeTransferBtn = document.getElementById("closeTransferBtn");
@@ -68,6 +70,7 @@ function renderDashboard() {
     <div>${transaction.date}</div>
     <div>${transaction.amount} MAD</div>
     <div>${transaction.type}</div>
+    <div>${transaction.etat}</div>
   `;
     transactionsList.appendChild(transactionItem);
   });
@@ -220,7 +223,7 @@ function checkUser(numcompte) {
     setTimeout(() => {
       const beneficiary = finduserbyaccount(numcompte);
       if (beneficiary)
-        resolve(beneficiaries);
+        resolve(beneficiary);
       else
         reject("Beneficiary not found");
     }, 2000);
@@ -241,7 +244,7 @@ function checkSolde(expediteur, amount) {
 
 
 function updateSolde(expediteur, destinataire, amount) {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     setTimeout(() => {
       expediteur.wallet.balance -= amount;
       destinataire.wallet.balance += amount;
@@ -259,7 +262,7 @@ function addtransactions(expediteur, destinataire, amount) {
         id: Date.now(),
         type: "credit",
         amount: amount,
-        date: Date.now().toLocaleString(),
+        date: new Date().toISOString().slice(0, 10),
         from: expediteur.name
       }
       //create debit transaction
@@ -267,7 +270,7 @@ function addtransactions(expediteur, destinataire, amount) {
         id: Date.now(),
         type: "debit",
         amount: amount,
-        date: Date.now().toLocaleString(),
+        date: new Date().toISOString().slice(0, 10),
         to: destinataire.name,
       }
       expediteur.wallet.transactions.push(debit);
@@ -280,24 +283,29 @@ function addtransactions(expediteur, destinataire, amount) {
 
 // **************************************transfer***************************************************//
 function transfer(expediteur, numcompte, amount) {
+
   let destinataire;
 
-  checkUser(numcompte)
-  .then((dest) => {
-    console.log("Étape 1: Destinataire trouve -", dest.name);
-    destinataire = dest;
-    return checkSolde(expediteur, amount);
-  })
-  .then((message) => {
-    console.log(message);
-    return updateSolde(expediteur, destinataire, amount);
-  })
-  .then((message) => {
-    console.log(message);
-    return addtransactions(expediteur, destinataire, amount);
-  })
-  .then((message) => console.log(message))
-  .catch((error) => console.log(error));
+  checkUser(numcompte) //p0
+    .then((dest) => { // P1
+      console.log("Étape 1: Destinataire trouve -", dest.name);
+      destinataire = dest;
+      return checkSolde(expediteur, amount);//p2
+    })
+    .then((message) => { //p3
+      console.log(message);
+      return updateSolde(expediteur, destinataire, amount); //p4
+    })
+    .then((message) => {
+      console.log(message);
+      return addtransactions(expediteur, destinataire, amount);
+    })
+    .then((message) => {
+      console.log(message);
+      renderDashboard();
+    }
+    )
+    .catch((error) => console.log(error));
 }
 
 
@@ -333,3 +341,158 @@ function handleTransfer(e) {
 
     func1(4,produit);
     */
+
+/**********************************************************RECHARGE********************************************************************** */
+const quickTopupBtn = document.getElementById("quickTopup");
+const submitRechargeBtn = document.getElementById("submitRechargeBtn");
+
+const rechargeCard = document.getElementById("rechargeCard");
+
+const rechargePopup = document.getElementById("rechargePopup");
+
+const closeRechargeBtn = document.getElementById("closeRechargeBtn");
+const cancelRechargeBtn = document.getElementById("cancelRechargeBtn");
+
+const rechargeAmount = document.getElementById("rechargeAmount");
+
+//EVENTS
+quickTopupBtn.addEventListener("click", openRecharge);
+closeRechargeBtn.addEventListener("click", closeRecharge);
+cancelRechargeBtn.addEventListener("click", closeRecharge);
+submitRechargeBtn.addEventListener("click", handleRecharge);
+
+const today = new Date();
+const validcards = user.wallet.cards.filter(card => new Date(card.expiry) > today);
+
+function checkPreconditions() {
+  if (!user) {
+    alert("user not authenticated");
+    window.location.href = "/index.html";
+  }
+
+  else if (!user.wallet.cards || user.wallet.cards.length === 0) {
+    console.log(user.wallet.cards);
+    alert("no cards ");
+    return false;
+  }
+
+  else if (!validcards || validcards.length === 0) {
+    alert("vos cartes sont expirees");
+    return false;
+  }
+
+  else {
+    console.log("PreConditions verifer");
+    return true;
+  }
+}
+
+function openRecharge() {
+
+  if (!checkPreconditions()) {
+    return;
+  }
+  else {
+    rechargePopup.classList.remove("recharge-hidden");
+    rechargePopup.classList.add("recharge-visible");
+  }
+}
+
+function closeRecharge() {
+  rechargePopup.classList.remove("recharge-visible");
+  rechargePopup.classList.add("recharge-hidden");
+}
+
+function renderCardsRecharge() {
+  validcards.forEach((card) => {
+    const option = document.createElement("option");
+    option.value = card.numcards;
+    option.textContent = card.type + "****" + card.numcards;
+    rechargeCard.appendChild(option);
+  });
+}
+
+renderCardsRecharge();
+
+function checkMontant(amount) {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      if (amount === "" || amount < 10 || amount > 5000) {
+        reject("n'est pas un montant valide entre 10 et 5000");
+        return;
+      }
+
+      resolve(amount);
+    }, 2000);
+  })
+}
+
+function updateRechargeSolde(expediteur, amount, selectedCard) {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      if(selectedCard.balance < amount){
+        reject("Solde de la carte insuffisant");
+        return;
+      }
+
+      expediteur.wallet.balance += amount;
+      selectedCard.balance -= amount;
+      resolve("Montant augmenter");
+    }, 2000);
+  })
+}
+
+
+function addRechargeTransaction(expediteur, amount, etat) {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      const transaction = {
+        id: Date.now(),
+        type: "recharge",
+        etat: etat,
+        amount: amount,
+        date: new Date().toISOString().slice(0, 10),
+        from: expediteur.wallet.selectedCard.numcards,
+        to: expediteur.name
+      }
+      expediteur.wallet.transactions.push(transaction);
+      resolve(transaction);
+    }, 3000)
+  })
+}
+
+function recharge(amount) {
+  let selectedCard = user.wallet.selectedCard;
+  let transaction;
+  checkMontant(amount)
+    .then((validAmount) => {
+      return updateRechargeSolde(user, validAmount, selectedCard);
+    })
+    .then((message) => {
+      console.log(message);
+      return addRechargeTransaction(user, amount, "success");
+    })
+    .then((transaction) => {
+      transaction = transaction;
+      console.log("Recharge successful!");
+      renderDashboard();
+    })
+    .catch((error) => {
+      console.error(error);
+      return addRechargeTransaction(user, amount, "echec").then(() => {
+        renderDashboard();
+      }).catch((err) => console.error(err));
+    });
+
+}
+
+
+function handleRecharge(e) {
+  e.preventDefault();
+  const amount = Number(rechargeAmount.value);
+  const selectedCardNum = rechargeCard.value;
+  user.wallet.selectedCard = user.wallet.cards.find(card => card.numcards === selectedCardNum);
+  recharge(amount);
+}
+
+submitRechargeBtn.addEventListener("click", handleRecharge);

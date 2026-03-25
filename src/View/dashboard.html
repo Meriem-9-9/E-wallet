@@ -234,6 +234,40 @@
     </div>
   </div>
 
+
+<!-- Popup recharge -->
+<div class="recharge-overlay recharge-hidden" id="rechargePopup">
+  <div class="recharge-content">
+    <div class="recharge-header">
+      <h2>Recharger le compte</h2>
+      <button class="btn-close" id="closeRechargeBtn" type="button">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="recharge-body">
+      <form id="rechargeForm">
+        <div class="form-group">
+          <label for="rechargeCard">Carte</label>
+            <select id="rechargeCard" name="rechargeCard" required>
+              <option value="" disabled selected>Sélectionner une carte</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+          <label for="rechargeAmount">Montant</label>
+          <input type="number" id="rechargeAmount" name="rechargeAmount" min="1" placeholder="0.00">
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" id="cancelRechargeBtn">Annuler</button>
+          <button type="submit" class="btn btn-primary" id="submitRechargeBtn">Recharger</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
   <footer>
     <p>&copy; 2026 E-Wallet. Tous droits réservés.</p>
   </footer>
