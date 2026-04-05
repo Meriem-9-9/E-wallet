@@ -282,35 +282,21 @@ function addtransactions(expediteur, destinataire, amount) {
 }
 
 // **************************************transfer***************************************************//
-function transfer(expediteur, numcompte, amount) {
 
-  let destinataire;
-
-  checkUser(numcompte) //p0
-    .then((dest) => { // P1
-      console.log("Étape 1: Destinataire trouve -", dest.name);
-      destinataire = dest;
-      return checkSolde(expediteur, amount);//p2
-    })
-    .then((message) => { //p3
-      console.log(message);
-      return updateSolde(expediteur, destinataire, amount); //p4
-    })
-    .then((message) => {
-      console.log(message);
-      return addtransactions(expediteur, destinataire, amount);
-    })
-    .then((message) => {
-      console.log(message);
-      renderDashboard();
-    }
-    )
-    .catch((error) => console.log(error));
+async function transfer(expediteur, numcompte, amount) {
+  try{
+    const dest = await checkUser(numcompte);
+    const message = await checkSolde(expediteur,amount);
+    const messagesolde = await updateSolde(expediteur,dest,amount);
+    const messagetrans = await addtransactions(expediteur,dest,amount);
+    renderDashboard(); 
+  }catch(error){
+    console.error(error);
+  }
 }
 
 
-
-function handleTransfer(e) {
+async function handleTransfer(e) {
   e.preventDefault();
   const beneficiaryId = document.getElementById("beneficiary").value;
   const beneficiaryAccount = findbeneficiarieByid(user.id, beneficiaryId).account;
@@ -318,7 +304,7 @@ function handleTransfer(e) {
 
   const amount = Number(document.getElementById("amount").value);
 
-  transfer(user, beneficiaryAccount, amount);
+  await transfer(user, beneficiaryAccount, amount);
 
 }
 
@@ -430,7 +416,7 @@ function checkMontant(amount) {
 function updateRechargeSolde(expediteur, amount, selectedCard) {
   return new Promise((resolve, reject) => {
     setTimeout(() => {
-      if(selectedCard.balance < amount){
+      if (selectedCard.balance < amount) {
         reject("Solde de la carte insuffisant");
         return;
       }
@@ -461,38 +447,34 @@ function addRechargeTransaction(expediteur, amount, etat) {
   })
 }
 
-function recharge(amount) {
-  let selectedCard = user.wallet.selectedCard;
-  let transaction;
-  checkMontant(amount)
-    .then((validAmount) => {
-      return updateRechargeSolde(user, validAmount, selectedCard);
-    })
-    .then((message) => {
-      console.log(message);
-      return addRechargeTransaction(user, amount, "success");
-    })
-    .then((transaction) => {
-      transaction = transaction;
-      console.log("Recharge successful!");
-      renderDashboard();
-    })
-    .catch((error) => {
-      console.error(error);
-      return addRechargeTransaction(user, amount, "echec").then(() => {
-        renderDashboard();
-      }).catch((err) => console.error(err));
-    });
 
+async function recharge(amount) {
+  let selectedCard = user.wallet.selectedCard;
+  try {
+    const validAmout = await checkMontant(amount);
+    const message = await updateRechargeSolde(user, validAmount, selectedCard);
+    const transaction = await addRechargeTransaction(user, amount, "success");
+    renderDashboard();
+  }
+  catch(error){
+    console.log(error);
+    try{
+      await addRechargeTransaction(user,amount,"echec");
+      renderDashboard();
+    }
+    catch(error){
+      console.log(error);
+    }
+  }
 }
 
 
-function handleRecharge(e) {
+async function handleRecharge(e) {
   e.preventDefault();
   const amount = Number(rechargeAmount.value);
   const selectedCardNum = rechargeCard.value;
   user.wallet.selectedCard = user.wallet.cards.find(card => card.numcards === selectedCardNum);
-  recharge(amount);
+  await recharge(amount);
 }
 
 submitRechargeBtn.addEventListener("click", handleRecharge);
