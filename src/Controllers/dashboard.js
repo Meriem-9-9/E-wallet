@@ -452,7 +452,7 @@ async function recharge(amount) {
   let selectedCard = user.wallet.selectedCard;
   try {
     const validAmout = await checkMontant(amount);
-    const message = await updateRechargeSolde(user, validAmount, selectedCard);
+    const message = await updateRechargeSolde(user, validAmout, selectedCard);
     const transaction = await addRechargeTransaction(user, amount, "success");
     renderDashboard();
   }
